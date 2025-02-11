@@ -1,0 +1,22 @@
+:imagesdir: doc/images
+:source-highlighter: rouge
+:toc:
+:toclevels: 5
+
+# TopTronic 23S Games
+
+I have a remote TopTronic 23S heating control installation, so the idea is clear to at least monitor the device.
+
+Fortunately there has been done some groundworks.  These are:
+
+* link:https://github.com/bogeyman/gallipoli[bogeyman/gallipoli] - the root of all exploration in this direction.  Unfortunately development stopped 9 years ago...
+* link:https://github.com/tmuehlhoff/ceta/wiki/Protocol[tmuehlhoff/ceta] - wiki page of similar protocol
+* link:https://github.com/phiresky/ebv-theta-to-mqtt[phiresky/ebv-theta-to-mqtt] - EbV Theta to MQTT
+
+As said, currently I'm trying to find out, how to monitor measurements from the TopTronic.  This consists of reading the data stream and send it to my raspi@home.
+
+
+# Hardware On-Site
+
+The hardware on-site consists of a Raspi5 (2 GByte) and an link:https://www.pi-shop.ch/usb-to-rs232-485-serial-converter-onboard-original-ft232rnl-chip[RS485 USB dongle].
+It is connecting to my raspi@home via ssh automatically and opens a port to mqtt@home.
