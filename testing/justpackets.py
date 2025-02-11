@@ -17,7 +17,7 @@ g_if = "/dev/ttyUSB0"
 g_if_parity = serial.PARITY_SPACE     # Note: there seems to be some kind of parity on the line.  Not sure which one though
 g_mqtt_server = "127.0.0.1:1883"
 g_mqtt_topic = "ds"
-g_show_unknown = False
+g_show_unknown = True
 
 packet_state = "wait-start"
 packet = bytearray()
@@ -56,7 +56,12 @@ with (
 ):
     prev_t = datetime.now()
     while True:
-        data = s.read(100)
+        try:
+            data = s.read(100)
+        except Exception as e:
+            print("   Exception reading data: %s" % e)
+            data = b""
+
         for b in data:
             if packet_state == 'wait-start':
                 if b == 0x82:
@@ -153,9 +158,10 @@ with (
 
                                 line["data"] = data
                                 if g_mask  and  data != data_prev:
-                                    line["changed"] = 1
-                                    if data_prev != ""  and  mqttc is not None:
-                                        mqttc.publish("%s/%s" % (g_mqtt_topic, "cmd4-changed"), str(line), qos=0)
+                                    if data_prev != "":
+                                        line["changed"] = 1
+                                        if mqttc is not None:
+                                            mqttc.publish("%s/%s" % (g_mqtt_topic, "cmd4-changed"), str(line), qos=0)
                                     data_prev = data
 
                                 print(line)
