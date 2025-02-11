@@ -7,12 +7,16 @@ from datetime import datetime
 import json
 import crc
 import struct
+import sys
+import paho.mqtt.client as mqtt
 
 # ready for command line parameters
 g_mask = True
 g_print_time = False
 g_if = "/dev/ttyUSB0"
-g_if_parity = serial.PARITY_SPACE
+g_if_parity = serial.PARITY_SPACE     # Note: there seems to be some kind of parity on the line.  Not sure which one though
+g_mqtt_server = "127.0.0.1:1883"
+g_mqtt_topic = "ds"
 
 packet_state = "wait-start"
 packet = bytearray()
@@ -32,8 +36,18 @@ crccalc = crc.Calculator(
     )
 )
 
-# Note: there seems to be some kind of parity on the line.  Not sure which one though
-# 
+if g_mqtt_server != "":
+    try:
+        mqtt_server = (g_mqtt_server + ":1883").split(":")
+        mqttc = mqtt.Client()
+        mqttc.connect(mqtt_server[0], int(mqtt_server[1]))
+        mqttc.loop_start()
+    except Exception as e:
+        print("   mqtt exception: %s" % e)
+        sys.exit(2)
+else:
+    mqttc = None
+
 with (
     serial.Serial(g_if, baudrate=9600, timeout=0.001, bytesize=serial.EIGHTBITS,
                   stopbits=serial.STOPBITS_ONE, parity=g_if_parity, 
@@ -95,33 +109,67 @@ with (
                                 "crc": calcsum}
                         
                         if packet_cmd == 4:
+                            #
                             # currect state
-                            line["temp-out"] = packet[5] / 2.0 - 52.0
-                            if g_mask:
-                                data = "__" + data[2:]
-                            line["tempx"] = packet[20] / 2.0
-                            if g_mask:
-                                data = data[:30] + "__" + data[32:]
-                            line["tempk"] = packet[35] / 2.0
-                            if g_mask:
-                                data = data[:60] + "__" + data[62:]
+                            #
+                            try:
+                                t = packet[5] / 2.0 - 52.0
+                                line["temp-out"] = t
+                                if mqttc is not None:
+                                    mqttc.publish("%s/%s" % (g_mqtt_topic, "temp-out"), t, qos=0)
+                                if g_mask:
+                                    data = "__" + data[2:]
+                                
+                                t = packet[20] / 2.0
+                                line["tempx"] = t
+                                if mqttc is not None:
+                                    mqttc.publish("%s/%s" % (g_mqtt_topic, "tempx"), t, qos=0)
+                                if g_mask:
+                                    data = data[:30] + "__" + data[32:]
 
-                            line["data"] = data
-                            if g_mask  and  data != data_prev:
-                                line["changed"] = 1
-                                data_prev = data
-                            print(line)
-                            prev_t = now_t
-                        elif packet_cmd == 5:
-                            # time packet, ignore
-                            if g_print_time:
+                                t = packet[35] / 2.0
+                                line["temp-kessel"] = t
+                                if mqttc is not None:
+                                    mqttc.publish("%s/%s" % (g_mqtt_topic, "temp-kessel"), t, qos=0)
+                                if g_mask:
+                                    data = data[:60] + "__" + data[62:]
+
+                                line["data"] = data
+                                if g_mask  and  data != data_prev:
+                                    line["changed"] = 1
+                                    data_prev = data
+                                    if mqttc is not None:
+                                        mqttc.publish("%s/%s" % (g_mqtt_topic, "cmd4-changed"), data, qos=0)
+
                                 print(line)
                                 prev_t = now_t
+                            except Exception as e:
+                                print("   Exception with cmd4: %s" % e)
+                        elif packet_cmd == 5:
+                            #
+                            # time packet, ignore
+                            #
+                            try:
+                                if g_print_time:
+                                    print(line)
+                                    prev_t = now_t
+                                if mqttc is not None:
+                                    datetime_s = f"{data[10:14]}-{data[14:16]}-{data[8:10]} {data[6:8]}:{data[4:6]}:{data[2:4]}"
+                                    mqttc.publish("%s/%s" % (g_mqtt_topic, "datetime"), datetime_s, qos=0)
+                            except Exception as e:
+                                print("   Exception with cmd5: %s" % e)
                         else:
+                            #
                             # unknown packet
-                            line["unknown"] = 1
-                            print(line)
-                            prev_t = now_t
+                            #
+                            try:
+                                if mqttc is not None:
+                                    mqttc.publish("%s/%s" % (g_mqtt_topic, "cmd-unknown"), str(line), qos=0)
+                                line["unknown"] = 1
+                                print(line)
+                                prev_t = now_t
+                            except Exception as e:
+                                print("   Exception with cmd-unknown: %s" % e)
 
                         packet_prev = packet
 
