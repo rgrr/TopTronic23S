@@ -10,8 +10,8 @@ I have a remote TopTronic 23S heating control installation, so the idea is clear
 Fortunately there has been done some groundworks.  These are:
 
 * link:https://github.com/bogeyman/gallipoli[bogeyman/gallipoli] - the root of all exploration in this direction.  Unfortunately development stopped 9 years ago...
-* link:https://github.com/tmuehlhoff/ceta/wiki/Protocol[tmuehlhoff/ceta] - wiki page of similar protocol
-* link:https://github.com/phiresky/ebv-theta-to-mqtt[phiresky/ebv-theta-to-mqtt] - EbV Theta to MQTT
+* link:https://github.com/tmuehlhoff/ceta/wiki/Protocol[tmuehlhoff/ceta] - wiki page of a different but similar protocol
+* link:https://github.com/phiresky/ebv-theta-to-mqtt[phiresky/ebv-theta-to-mqtt] - EbV Theta to MQTT, again similar but different.  But I like the code behind
 
 As said, currently I'm trying to figure out, how to monitor measurements from the TopTronic.  This consists of reading the data stream and send it to my raspi@home.
 
