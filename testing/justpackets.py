@@ -8,11 +8,18 @@ import json
 import crc
 import struct
 
+# ready for command line parameters
+g_mask = True
+g_print_time = False
+g_if = "/dev/ttyUSB0"
+g_if_parity = serial.PARITY_SPACE
+
 packet_state = "wait-start"
 packet = bytearray()
 packet_prev = bytearray()
 packet_len = 0
 packet_cmd = 0
+data_prev = ""
 
 crccalc = crc.Calculator(
     crc.Configuration(
@@ -28,8 +35,8 @@ crccalc = crc.Calculator(
 # Note: there seems to be some kind of parity on the line.  Not sure which one though
 # 
 with (
-    serial.Serial("/dev/ttyUSB0", baudrate=9600, timeout=0.001, bytesize=serial.EIGHTBITS,
-                  stopbits=serial.STOPBITS_ONE, parity=serial.PARITY_SPACE, 
+    serial.Serial(g_if, baudrate=9600, timeout=0.001, bytesize=serial.EIGHTBITS,
+                  stopbits=serial.STOPBITS_ONE, parity=g_if_parity, 
                   xonxoff=False, rtscts=False, dsrdtr=False) as s
 ):
     prev_t = datetime.now()
@@ -77,14 +84,44 @@ with (
 
                     if checksum == calcsum:
                         now_t = datetime.now()
+                        data = packet[5:-2].hex()
                         line = {"time": now_t.astimezone().isoformat(), 
                                 "dt_ms": int(10000 * (now_t - prev_t).total_seconds()) / 10.0,
                                 "addr1": packet[1],
                                 "addr2": packet[2],
                                 "cmd": packet_cmd,
                                 "len": packet_len,
-                                "data": packet[5:-2].hex(),
+                                "data": data,
                                 "crc": calcsum}
-                        print(line)
-                        prev_t = now_t
+                        
+                        if packet_cmd == 4:
+                            # currect state
+                            line["temp-out"] = packet[5] / 2.0 - 52.0
+                            if g_mask:
+                                data = "__" + data[2:]
+                            line["tempx"] = packet[20] / 2.0
+                            if g_mask:
+                                data = data[:30] + "__" + data[32:]
+                            line["tempk"] = packet[35] / 2.0
+                            if g_mask:
+                                data = data[:60] + "__" + data[62:]
+
+                            line["data"] = data
+                            if g_mask  and  data != data_prev:
+                                line["changed"] = 1
+                                data_prev = data
+                            print(line)
+                            prev_t = now_t
+                        elif packet_cmd == 5:
+                            # time packet, ignore
+                            if g_print_time:
+                                print(line)
+                                prev_t = now_t
+                        else:
+                            # unknown packet
+                            line["unknown"] = 1
+                            print(line)
+                            prev_t = now_t
+
                         packet_prev = packet
+
