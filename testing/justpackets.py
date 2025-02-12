@@ -9,6 +9,25 @@ import crc
 import struct
 import sys
 import paho.mqtt.client as mqtt
+import signal
+
+
+mqttc = None
+
+
+
+def ignoreHandler(signum = None, frame = None):
+    pass
+
+
+
+def signalHandler(signum = None, frame = None):
+    print('Signal handler called with signal ' + str(signum))
+    mqttc.disconnect()
+    print('Deamon stop')
+    sys.exit(0)
+
+
 
 # ready for command line parameters
 g_mask = True
@@ -18,6 +37,7 @@ g_if_parity = serial.PARITY_SPACE     # Note: there seems to be some kind of par
 g_mqtt_server = "127.0.0.1:1883"
 g_mqtt_topic = "ds"
 g_show_unknown = True
+g_show_changed_only = True
 
 packet_state = "wait-start"
 packet = bytearray()
@@ -36,6 +56,10 @@ crccalc = crc.Calculator(
         reverse_output=True,
     )
 )
+
+signal.signal(signal.SIGPIPE, ignoreHandler)
+for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGHUP, signal.SIGQUIT]:
+    signal.signal(sig, signalHandler)
 
 if g_mqtt_server != "":
     try:
@@ -144,6 +168,8 @@ with (
                                     data = data[:60] + "__" + data[62:]
                                 
                                 if not g_show_unknown:
+                                    #
+                                    # all of this happens, if temp-kessel goes up until ~85°C
                                     # unknown: values seen are 0x00, 0x02, 0xff
                                     if g_mask:
                                         data = data[0:4] + ".." + data[6:]
@@ -158,14 +184,15 @@ with (
 
                                 line["data"] = data
                                 if g_mask  and  data != data_prev:
-                                    if data_prev != "":
+                                    if data_prev != ""  or  g_show_changed_only:    # show also start line if g_show_changed_only
                                         line["changed"] = 1
                                         if mqttc is not None:
                                             mqttc.publish("%s/%s" % (g_mqtt_topic, "cmd4-changed"), str(line), qos=0)
                                     data_prev = data
 
-                                print(line)
-                                prev_t = now_t
+                                if "changed" in line  or  not g_show_changed_only:
+                                    print(line)
+                                    prev_t = now_t
                             except Exception as e:
                                 print("   Exception with cmd4: %s" % e)
                         elif packet_cmd == 5:
