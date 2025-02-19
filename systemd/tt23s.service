@@ -1,0 +1,34 @@
+# $Id: tt23s.service,v 1.1 2025/02/11 20:53:22 root Exp root $
+#
+# This script work on any system using systemd as the init process.
+# It works on Debian/Raspbian Jessie.
+# If you have Debian/Rapbian Wheezy and want to use this script with systemd
+# follow the information here : https://wiki.debian.org/systemd
+
+# systemctl daemon-reload && sudo systemctl enable tt23s
+
+# To consult the log : journalctl -u tt23s
+[Unit]
+Description=tt23s collects data from a TopTronic 23s and transmits the data via mqtt.
+After=syslog.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+#Environment="NODE_OPTIONS=--max-old-space-size=128"
+#Environment="NODE_RED_OPTIONS=-v"
+#Full Path to Node.js
+ExecStart=/usr/bin/env python3 justpackets.py
+WorkingDirectory=/home/hardy/heizung/TopTronic23S/testing
+User=hardy
+Group=hardy
+Nice=10
+SyslogIdentifier=tt23s
+#StandardOutput=syslog
+# Make tt23s restart if it fails
+Restart=on-failure
+# Node-RED need a SIGINT to be notified to stop
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target
