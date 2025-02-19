@@ -10,9 +10,13 @@ import struct
 import sys
 import paho.mqtt.client as mqtt
 import signal
+import functools
 
 
 mqttc = None
+
+# always flush immediately
+print = functools.partial(print, flush=True)
 
 
 
@@ -130,7 +134,7 @@ with (
                         now_t = datetime.now()
                         data = packet[5:-2].hex()
                         line = {"time": now_t.astimezone().isoformat(), 
-                                "dt_ms": int(10000 * (now_t - prev_t).total_seconds()) / 10.0,
+                                # "dt_ms": int(10000 * (now_t - prev_t).total_seconds()) / 10.0,
                                 "addr1": packet[1],
                                 "addr2": packet[2],
                                 "cmd": packet_cmd,
@@ -151,7 +155,15 @@ with (
                                 if g_mask:
                                     data = "__" + data[2:]
                                 
-                                # unknown temperature
+                                # unknown temperature (Rücklauf I?)
+                                t = packet[11] / 2.0
+                                line["tempy"] = t
+                                if mqttc is not None:
+                                    mqttc.publish("%s/%s" % (g_mqtt_topic, "tempy"), t, qos=0)
+                                if g_mask:
+                                    data = data[:12] + "__" + data[14:]
+
+                                # unknown temperature (Rücklauf II?), seems to be the same value as Rücklauf I
                                 t = packet[20] / 2.0
                                 line["tempx"] = t
                                 if mqttc is not None:
@@ -172,15 +184,11 @@ with (
                                     # all of this happens, if temp-kessel goes up until ~85°C
                                     # unknown: values seen are 0x00, 0x02, 0xff
                                     if g_mask:
-                                        data = data[0:4] + ".." + data[6:]
+                                        data = data[:4] + ".." + data[6:]
 
                                     # unknown: values seen are 0x00, 0x10
                                     if g_mask:
-                                        data = data[0:6] + ".." + data[8:]
-
-                                    # unknown: values seen are 0x6a, 0xa6
-                                    if g_mask:
-                                        data = data[0:12] + ".." + data[14:]
+                                        data = data[:6] + ".." + data[8:]
 
                                 line["data"] = data
                                 if g_mask  and  data != data_prev:
@@ -204,7 +212,7 @@ with (
                                     print(line)
                                     prev_t = now_t
                                 if mqttc is not None:
-                                    datetime_s = f"{data[10:14]}-{data[14:16]}-{data[8:10]} {data[6:8]}:{data[4:6]}:{data[2:4]}"
+                                    datetime_s = f"{data[10:14]}-{data[16:18]}-{data[8:10]} {data[6:8]}:{data[4:6]}:{data[2:4]}"
                                     mqttc.publish("%s/%s" % (g_mqtt_topic, "datetime"), datetime_s, qos=0)
                             except Exception as e:
                                 print("   Exception with cmd5: %s" % e)
