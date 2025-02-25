@@ -1,0 +1,265 @@
+[
+    {
+        "apiVersion": "influxdata.com/v2alpha1",
+        "kind": "Dashboard",
+        "metadata": {
+            "name": "hungry-gagarin-b8d001"
+        },
+        "spec": {
+            "charts": [
+                {
+                    "axes": [
+                        {
+                            "base": "10",
+                            "name": "x",
+                            "scale": "linear"
+                        },
+                        {
+                            "base": "10",
+                            "name": "y",
+                            "scale": "linear"
+                        }
+                    ],
+                    "colorizeRows": true,
+                    "colors": [
+                        {
+                            "id": "VjUd7N7mNWH3HlC9Z5g7R",
+                            "name": "Nineteen Eighty Four",
+                            "type": "scale",
+                            "hex": "#31C0F6"
+                        },
+                        {
+                            "id": "7T1MBUcgyQ-PBz9c-0oz9",
+                            "name": "Nineteen Eighty Four",
+                            "type": "scale",
+                            "hex": "#A500A5"
+                        },
+                        {
+                            "id": "7LXpyf5ea9TCqPUG5wRRJ",
+                            "name": "Nineteen Eighty Four",
+                            "type": "scale",
+                            "hex": "#FF7E27"
+                        }
+                    ],
+                    "geom": "line",
+                    "height": 4,
+                    "heightRatio": 0.12663185378590078,
+                    "hoverDimension": "auto",
+                    "kind": "Xy",
+                    "legendColorizeRows": true,
+                    "legendOpacity": 1,
+                    "legendOrientationThreshold": 100000000,
+                    "name": "Außentemperatur [°C]",
+                    "opacity": 1,
+                    "orientationThreshold": -1,
+                    "position": "overlaid",
+                    "queries": [
+                        {
+                            "query": "from(bucket: \"heizung\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"temp-out\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")"
+                        }
+                    ],
+                    "staticLegend": {
+                        "colorizeRows": true,
+                        "heightRatio": 0.12663185378590078,
+                        "opacity": 1,
+                        "orientationThreshold": -1,
+                        "widthRatio": 1
+                    },
+                    "width": 12,
+                    "widthRatio": 1,
+                    "xCol": "_time",
+                    "yCol": "_value"
+                },
+                {
+                    "axes": [
+                        {
+                            "base": "10",
+                            "name": "x",
+                            "scale": "linear"
+                        },
+                        {
+                            "base": "10",
+                            "name": "y",
+                            "scale": "linear"
+                        }
+                    ],
+                    "colorizeRows": true,
+                    "colors": [
+                        {
+                            "id": "VjUd7N7mNWH3HlC9Z5g7R",
+                            "name": "Nineteen Eighty Four",
+                            "type": "scale",
+                            "hex": "#31C0F6"
+                        },
+                        {
+                            "id": "7T1MBUcgyQ-PBz9c-0oz9",
+                            "name": "Nineteen Eighty Four",
+                            "type": "scale",
+                            "hex": "#A500A5"
+                        },
+                        {
+                            "id": "7LXpyf5ea9TCqPUG5wRRJ",
+                            "name": "Nineteen Eighty Four",
+                            "type": "scale",
+                            "hex": "#FF7E27"
+                        }
+                    ],
+                    "geom": "line",
+                    "height": 3,
+                    "heightRatio": 0.20496083550913838,
+                    "hoverDimension": "auto",
+                    "kind": "Xy",
+                    "legendColorizeRows": true,
+                    "legendOpacity": 1,
+                    "legendOrientationThreshold": 100000000,
+                    "name": "Kesseltemperatur [°C]",
+                    "opacity": 1,
+                    "orientationThreshold": -1,
+                    "position": "overlaid",
+                    "queries": [
+                        {
+                            "query": "from(bucket: \"heizung\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"temp-kessel\" or r[\"_measurement\"] == \"temp-x\" or r[\"_measurement\"] == \"temp-y\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")"
+                        }
+                    ],
+                    "staticLegend": {
+                        "colorizeRows": true,
+                        "heightRatio": 0.20496083550913838,
+                        "opacity": 1,
+                        "orientationThreshold": -1,
+                        "widthRatio": 1
+                    },
+                    "width": 12,
+                    "widthRatio": 1,
+                    "xCol": "_time",
+                    "yCol": "_value",
+                    "yPos": 4
+                },
+                {
+                    "axes": [
+                        {
+                            "base": "10",
+                            "name": "x",
+                            "scale": "linear"
+                        },
+                        {
+                            "base": "10",
+                            "name": "y",
+                            "scale": "linear"
+                        }
+                    ],
+                    "colorizeRows": true,
+                    "colors": [
+                        {
+                            "id": "VjUd7N7mNWH3HlC9Z5g7R",
+                            "name": "Nineteen Eighty Four",
+                            "type": "scale",
+                            "hex": "#31C0F6"
+                        },
+                        {
+                            "id": "7T1MBUcgyQ-PBz9c-0oz9",
+                            "name": "Nineteen Eighty Four",
+                            "type": "scale",
+                            "hex": "#A500A5"
+                        },
+                        {
+                            "id": "7LXpyf5ea9TCqPUG5wRRJ",
+                            "name": "Nineteen Eighty Four",
+                            "type": "scale",
+                            "hex": "#FF7E27"
+                        }
+                    ],
+                    "geom": "line",
+                    "height": 3,
+                    "hoverDimension": "auto",
+                    "kind": "Xy",
+                    "legendColorizeRows": true,
+                    "legendOpacity": 1,
+                    "legendOrientationThreshold": 100000000,
+                    "name": "Brenndauer [%(t)]",
+                    "opacity": 1,
+                    "orientationThreshold": 100000000,
+                    "position": "overlaid",
+                    "queries": [
+                        {
+                            "query": "from(bucket: \"heizung\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"heater_daily_sum_percent\" or r[\"_measurement\"] == \"heater_hourly_sum_percent\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")"
+                        }
+                    ],
+                    "staticLegend": {
+                        "colorizeRows": true,
+                        "opacity": 1,
+                        "orientationThreshold": 100000000,
+                        "widthRatio": 1
+                    },
+                    "width": 12,
+                    "widthRatio": 1,
+                    "xCol": "_time",
+                    "yCol": "_value",
+                    "yPos": 7
+                },
+                {
+                    "axes": [
+                        {
+                            "base": "10",
+                            "name": "x",
+                            "scale": "linear"
+                        },
+                        {
+                            "base": "10",
+                            "name": "y",
+                            "scale": "linear"
+                        }
+                    ],
+                    "colorizeRows": true,
+                    "colors": [
+                        {
+                            "id": "VjUd7N7mNWH3HlC9Z5g7R",
+                            "name": "Nineteen Eighty Four",
+                            "type": "scale",
+                            "hex": "#31C0F6"
+                        },
+                        {
+                            "id": "7T1MBUcgyQ-PBz9c-0oz9",
+                            "name": "Nineteen Eighty Four",
+                            "type": "scale",
+                            "hex": "#A500A5"
+                        },
+                        {
+                            "id": "7LXpyf5ea9TCqPUG5wRRJ",
+                            "name": "Nineteen Eighty Four",
+                            "type": "scale",
+                            "hex": "#FF7E27"
+                        }
+                    ],
+                    "geom": "line",
+                    "height": 3,
+                    "hoverDimension": "auto",
+                    "kind": "Xy",
+                    "legendColorizeRows": true,
+                    "legendOpacity": 1,
+                    "legendOrientationThreshold": 100000000,
+                    "name": "Brenndauer - stündlich/täglich [%(t)]",
+                    "opacity": 1,
+                    "orientationThreshold": 100000000,
+                    "position": "overlaid",
+                    "queries": [
+                        {
+                            "query": "from(bucket: \"heizung\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"heater_hourly_sum_percent_once\" or r[\"_measurement\"] == \"heater_daily_sum_percent_once\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\n  |> yield(name: \"mean\")"
+                        }
+                    ],
+                    "staticLegend": {
+                        "colorizeRows": true,
+                        "opacity": 1,
+                        "orientationThreshold": 100000000,
+                        "widthRatio": 1
+                    },
+                    "width": 12,
+                    "widthRatio": 1,
+                    "xCol": "_time",
+                    "yCol": "_value",
+                    "yPos": 10
+                }
+            ],
+            "name": "Heizung Därstetten"
+        }
+    }
+]
